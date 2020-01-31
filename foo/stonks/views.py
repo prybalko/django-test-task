@@ -1,7 +1,8 @@
 import time
+from random import random
+
 from django.db import transaction
 from django.http import HttpResponse
-from random import random
 
 from .models import Stonk
 
@@ -28,18 +29,18 @@ def index_view(request):
 
 @transaction.atomic
 def refresh_view(request):
-    for stonk in Stonk.objects.all():
+    for stonk in Stonk.objects.select_for_update().all():
         fluctuate_stonk(stonk)
     return HttpResponse('Stonks fluctuated')
 
 
 @transaction.atomic
 def top_view(request):
-    for stonk in Stonk.objects.filter(value__gt=25000):
-        bump_stonk(stonk)
-
-    for stonk in Stonk.objects.filter(value__lt=25000):
-        hump_stonk(stonk)
+    for stonk in Stonk.objects.select_for_update().all():
+        if stonk.value > 25000:
+            bump_stonk(stonk)
+        elif stonk.value < 25000:
+            hump_stonk(stonk)
 
     result = ''
     for stonk in Stonk.objects.order_by('-score')[:10]:
