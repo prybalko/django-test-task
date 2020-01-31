@@ -1,9 +1,13 @@
 version: "3"
+
+volumes:
+  appData:
+
 services:
   app:
     restart: always
     build: .
-    command: "sh start.sh"
+    command: ["sh", "start.sh"]
     volumes:
       - .:/code
     ports:
@@ -13,7 +17,7 @@ services:
   db:
     image: mysql:5.6
     volumes:
-      - "./mysql:/var/lib/mysql"
+      - appData:/var/lib/mysql
     ports:
       - "3333:3306"
     restart: always
